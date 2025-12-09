@@ -331,7 +331,6 @@ class Embeddings(nn.Module):
             torch.zeros(1, n_patches, config.hidden_size)
         )
 
-        self.halfconv = Conv2d(1024, 512, 1, 1)
         self.dropout = Dropout(config.transformer["dropout_rate"])
 
     def forward(self, x):
@@ -341,7 +340,6 @@ class Embeddings(nn.Module):
             features = None
 
         # x: 1024 16  features[3]: 0: 512 32 1: 256 64 2:64 128
-        xout = self.halfconv(x)
         x = self.patch_embeddings(x)  # (B, hidden. n_patches^(1/2), n_patches^(1/2))
         x = x.flatten(2)
         x = x.transpose(-1, -2)  # (B, n_patches, hidden)
@@ -349,7 +347,7 @@ class Embeddings(nn.Module):
 
         embeddings = x + self.position_embeddings
         embeddings = self.dropout(embeddings)
-        return embeddings, features, xout
+        return embeddings, features, x  # x is the output of the last conv layer 
 
 
 class Block(nn.Module):
